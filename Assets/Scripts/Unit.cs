@@ -12,6 +12,8 @@ public class Unit : MonoBehaviour
   void Start()
   {
     AiPath = GetComponent<AIPath>();
+    AiPath.constrainInsideGraph = true;
+
     Animator = GetComponent<Animator>();
   }
 
@@ -21,15 +23,30 @@ public class Unit : MonoBehaviour
     {
       Move(this);
     }
+
+    if (AiPath.remainingDistance < 2f && UnitState != Constants.UnitState.Idle)
+    {
+      UnitAnimator.Idle(Animator);
+      UnitState = Constants.UnitState.Idle;
+      Debug.Log("Stop");
+    }
+
+    if (AiPath.remainingDistance >= 2f && UnitState != Constants.UnitState.Moving)
+    {
+      UnitAnimator.Move(Animator);
+      UnitState = Constants.UnitState.Moving;
+      Debug.Log("Moving");
+    }
   }
 
   private static void Move(Unit unit)
   {
     Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
     Physics.Raycast(ray, out RaycastHit hit, 100);
-
-
     unit.AiPath.destination = hit.point;
+
+    UnitAnimator.Move(unit.Animator);
+    unit.UnitState = Constants.UnitState.Moving;
     Debug.Log("Move");
   }
 }
